@@ -1,18 +1,10 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from accounts.models import BankAccount
+from accounts.models import BankAccount, Currency
 
 
 class Transaction(models.Model):
-    CURRENCY_CHOICES = [
-        ('RUB', 'Российский Рубль'),
-        ('USD', 'Американский Доллар'),
-        ('CNY', 'Китайский Юань'),
-        ('AMD', 'Армянский драм'),
-        ('GEL', 'Грузинский лари'),
-    ]
-
     METHOD_CHOICES = [
         ('SBP', 'СБП'),
         ('On_account', 'На банковский счет')
@@ -38,13 +30,11 @@ class Transaction(models.Model):
         unique=False,
         null=False
     )
-    currency = models.CharField(
+    currency = models.ForeignKey(
+        Currency,
         verbose_name="Валюта",
-        max_length=3,
-        choices=CURRENCY_CHOICES,
-        unique=False,
         null=False,
-        default='RUB',
+        on_delete=models.CASCADE
     )
     method = models.CharField(
         verbose_name="Способ перевода",
@@ -59,3 +49,6 @@ class Transaction(models.Model):
         db_table = 'transactions'
         verbose_name = 'Транзакция'
         verbose_name_plural = 'Транзакции'
+
+
+

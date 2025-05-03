@@ -1,8 +1,10 @@
 import re
+from locale import currency
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from pytils.translit import slugify
 
 from accounts.utils import create_bank_account_number
 from bank_server import settings
@@ -58,6 +60,7 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         created = not self.pk  # Проверяем, новый ли пользователь
+        self.username = f"{slugify(self.first_name)}_{slugify(self.last_name)}"
         super().save(*args, **kwargs)  # Сначала сохраняем пользователя
 
         if created:
@@ -68,9 +71,49 @@ class User(AbstractUser):
                 user=self,
                 account_number=account_number,
                 type='Debit',
-                currency='RUB',
+                currency=Currency.objects.get(kod='RUB'),
                 balance=0
             )
+
+
+class Currency(models.Model):
+    CURRENCY_CHOICES = [
+        ('RUB', 'Российский Рубль'),
+        ('USD', 'Американский Доллар'),
+        ('CNY', 'Китайский Юань'),
+        ('AMD', 'Армянский драм'),
+        ('GEL', 'Грузинский лари'),
+    ]
+
+    currency = models.CharField(
+        verbose_name="Валюта",
+        max_length=25,
+        unique=True,
+        null=False,
+        blank=False
+    )
+    kod = models.CharField(
+        verbose_name="Код валюты",
+        max_length=3,
+        unique=True,
+        null=False,
+        blank=False
+    )
+    course = models.FloatField(
+        verbose_name="Курс относительно рубля",
+        unique=False,
+        null=False,
+        blank=False,
+        default=0.0
+    )
+
+    def __str__(self):
+        return self.currency
+
+    class Meta:
+        db_table = 'currency'
+        verbose_name = "Валюта"
+        verbose_name_plural = "Валюты"
 
 
 class BankAccount(models.Model):
@@ -78,14 +121,6 @@ class BankAccount(models.Model):
         ('Debit', 'Дебетовый'),
         ('Credit', 'Кредитный'),
         ('Contribution', 'Вклад')
-    ]
-
-    CURRENCY_CHOICES = [
-        ('RUB', 'Российский Рубль'),
-        ('USD', 'Американский Доллар'),
-        ('CNY', 'Китайский Юань'),
-        ('AMD', 'Армянский драм'),
-        ('GEL', 'Грузинский лари'),
     ]
 
     user = models.ForeignKey(
@@ -109,13 +144,11 @@ class BankAccount(models.Model):
         null=False,
         default='Debit',
     )
-    currency = models.CharField(
+    currency = models.ForeignKey(
+        Currency,
         verbose_name="Валюта",
-        max_length=3,
-        choices=CURRENCY_CHOICES,
-        unique=False,
         null=False,
-        default='RUB',
+        on_delete=models.CASCADE
     )
     balance = models.IntegerField(
         verbose_name="Количество средств",

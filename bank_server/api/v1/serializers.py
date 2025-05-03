@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from pytils.translit import slugify
 from rest_framework import serializers
 
 User = get_user_model()
@@ -76,6 +77,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         # Создаем пользователя с хешированием пароля
         user = User.objects.create_user(
+            username=f"{slugify(validated_data['first_name'])}_{slugify(validated_data['last_name'])}",
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
