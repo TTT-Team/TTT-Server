@@ -22,6 +22,14 @@ def validate_account(value):
 
 
 class User(AbstractUser):
+    username = models.CharField(
+        verbose_name='Username',
+        max_length=30,
+        unique=True,
+        validators=[validate_username],
+        null=True,
+        blank=True
+    )
     email = models.EmailField(verbose_name='Email', unique=True, blank=False, null=False)
     first_name = models.CharField(
         max_length=50,
@@ -30,7 +38,7 @@ class User(AbstractUser):
         validators=[validate_username],
         verbose_name="Имя"
     )
-    second_name = models.CharField(
+    last_name = models.CharField(
         max_length=80,
         unique=False,
         null=False,

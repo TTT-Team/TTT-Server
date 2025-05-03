@@ -1,7 +1,6 @@
 from pathlib import Path
 from config import config
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config.SECRET_KEY.get_secret_value()
@@ -19,6 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',  # (необязательно, для красивого UI)
     'rest_framework',
     'accounts',
     'transactions',
@@ -99,6 +100,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.authentications.CustomAuthBackend',
+]
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
@@ -107,7 +113,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API документация TTT-Bank',
+    'DESCRIPTION': 'Документация для API TTT-Bank',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    "TAGS": [
+        {"name": "auth", "description": "Операции с авторизацией"},
+    ],
 }
