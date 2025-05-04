@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import MinValueValidator
 from pytils.translit import slugify
 from rest_framework import serializers
+
+from accounts.models import validate_account, validate_phone, BankAccount
 
 User = get_user_model()
 
@@ -86,3 +89,103 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+
+class DepositSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(
+        max_digits=12,  # Общее количество цифр
+        decimal_places=2,
+        required=True,
+        validators=[MinValueValidator(0.01)]
+    )
+    bank_account = serializers.CharField(
+        max_length=20,
+        required=True,
+        validators=[validate_account],
+    )
+
+    def validate(self, attrs):
+        amount = attrs.get('amount')
+        bank_account = attrs.get('bank_account')
+
+        if not amount or not bank_account:
+            raise serializers.ValidationError("Необходимо указать сумму и номер счета")
+
+        return attrs
+
+
+class TransferSBPSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(
+        max_digits=12,  # Общее количество цифр
+        decimal_places=2,
+        required=True,
+        validators=[MinValueValidator(0.01)]
+    )
+    bank_account = serializers.CharField(
+        max_length=20,
+        required=True,
+        validators=[validate_account],
+    )
+    to_client_phone = serializers.CharField(
+        max_length=10,
+        required=True,
+        validators=[validate_phone],
+    )
+
+    def validate(self, attrs):
+        amount = attrs.get('amount')
+        bank_account = attrs.get('bank_account')
+        to_client_phone = attrs.get('to_client_phone')
+
+        if not amount or not bank_account or not to_client_phone:
+            raise serializers.ValidationError("Необходимо указать сумму, номер счета и телефон получателя")
+
+        return attrs
+
+
+class TransferAccountSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(
+        max_digits=12,  # Общее количество цифр
+        decimal_places=2,
+        required=True,
+        validators=[MinValueValidator(0.01)]
+    )
+    bank_account = serializers.CharField(
+        max_length=20,
+        required=True,
+        validators=[validate_account],
+    )
+    to_client_bank_account_number = serializers.CharField(
+        max_length=20,
+        required=True,
+        validators=[validate_account],
+    )
+
+    def validate(self, attrs):
+        amount = attrs.get('amount')
+        bank_account = attrs.get('bank_account')
+        to_client_bank_account_number = attrs.get('to_client_bank_account_number')
+
+        if not amount or not bank_account or not to_client_bank_account_number:
+            raise serializers.ValidationError("Необходимо указать сумму, номера счетов отправителя и получателя")
+
+        return attrs
+
+
+class BankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankAccount
+        fields = [
+            'id', 'account_number', 'type',
+            'currency', 'balance', 'isMain',
+            'time_create', 'time_update'
+        ]
+        read_only_fields = [
+            'id', 'account_number',
+            'time_create', 'time_update'
+        ]
+
+    def validate_balance(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Баланс не может быть отрицательным")
+        return value

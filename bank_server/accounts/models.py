@@ -11,12 +11,14 @@ from bank_server import settings
 
 
 def validate_username(value):
-    if not re.match(r"^[a-zA-Zа-яА-Я]+$", value):
+    if not re.match(r"^[a-zA-Zа-яА-Я_]+$", value):
         raise ValidationError("Имя пользователя может содержать только латинские и кириллические символы.")
+
 
 def validate_phone(value):
     if not re.match(r"^[0-9]{10}$", value):
         raise ValidationError("Телефон должен содержать только цифры и быть в длину 10 символов")
+
 
 def validate_account(value):
     if not re.match(r"^[0-9]{20}$", value):
@@ -65,13 +67,18 @@ class User(AbstractUser):
 
         if created:
             # Генерация номера счета
-            account_number = create_bank_account_number(self.pk, "Debit", "RUB")
+            account_number = create_bank_account_number(
+                id_client=self.pk,
+                type_account="Debit",
+                currency="RUB",
+            )
 
             BankAccount.objects.create(
                 user=self,
                 account_number=account_number,
                 type='Debit',
                 currency=Currency.objects.get(kod='RUB'),
+                isMain=True,
                 balance=0
             )
 
@@ -90,20 +97,20 @@ class Currency(models.Model):
         max_length=25,
         unique=True,
         null=False,
-        blank=False
+        blank=True
     )
     kod = models.CharField(
         verbose_name="Код валюты",
         max_length=3,
         unique=True,
         null=False,
-        blank=False
+        blank=True
     )
     course = models.FloatField(
         verbose_name="Курс относительно рубля",
         unique=False,
         null=False,
-        blank=False,
+        blank=True,
         default=0.0
     )
 
@@ -148,17 +155,24 @@ class BankAccount(models.Model):
         Currency,
         verbose_name="Валюта",
         null=False,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        default=1
     )
-    balance = models.IntegerField(
+    balance = models.DecimalField(
         verbose_name="Количество средств",
+        max_digits=12,  # Общее количество цифр
+        decimal_places=2,
         unique=False,
         null=False,
         default=0,
     )
+    isMain = models.BooleanField(
+        verbose_name="Основной счет",
+        null=True,
+        default=False,
+    )
     time_create = models.DateTimeField(verbose_name='Дата создания счета', auto_now_add=True)
     time_update = models.DateTimeField(verbose_name='Дата изменения счета', auto_now=True)
-
 
     def __str__(self):
         return f"{self.user} - {self.type}"

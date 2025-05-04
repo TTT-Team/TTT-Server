@@ -129,8 +129,7 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {"name": "auth", "description": "Операции с авторизацией"},
         {"name": "bank_account", "description": "Операции с счетом"},
-        {"name": "transfers", "description": "Переводы"},
-
+        {"name": "transfer", "description": "Переводы"},
     ],
 }
 

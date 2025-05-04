@@ -9,10 +9,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('accounts/deposit/', views.DepositAPIView.as_view(), name='deposit'),
-    # path('/accounts/{account_id}/withdraw/', views.BooksAPIList.as_view(), name='withdraw'),
-    # path('/accounts/transfer/', views.BooksAPIList.as_view(), name='transfer'),
-    # path('/accounts/', views.BooksAPIList.as_view(), name='deposit'),
-    # path('/accounts/{account_id}/', views.BooksAPIList.as_view(), name='deposit'),
+    path('accounts/withdraw/', views.WithdrawAPIView.as_view(), name='withdraw'),
+    path('accounts/transfer/sbp/', views.TransferSBPAPIView.as_view(), name='transfer-sbp'),
+    path('accounts/transfer/account/', views.TransferAccountAPIView.as_view(), name='transfer-account'),
+    path('accounts/', views.BankAccountListCreateAPIView.as_view(), name='account-list'),
+    path('accounts/<int:pk>/', views.BankAccountRetrieveUpdateDestroyAPIView.as_view(), name='account-detail'),
 
     path('auth/login/', views.LoginAPIView.as_view(), name='login'),
     path('auth/logout/', views.LogoutAPIView.as_view(), name='logout'),
