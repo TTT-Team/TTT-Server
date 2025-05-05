@@ -15,8 +15,11 @@ TTT-Bank Server - это бэкенд-приложение, предоставл
 
 - Python 3.8+
 - pip (менеджер пакетов Python)
+- Docker (для запуска через контейнер)
 
 ## Установка и запуск
+
+### Локальная установка
 
 1. Клонируйте репозиторий:
 ```bash
@@ -53,6 +56,29 @@ python bank_server/manage.py migrate
 6. Запустите сервер разработки:
 ```bash
 python bank_server/manage.py runserver
+```
+
+Сервер будет доступен по адресу: http://127.0.0.1:8000/
+
+### Запуск через Docker
+
+1. Соберите Docker образ:
+```bash
+docker build -t ttt-bank-server .
+```
+
+2. Запустите контейнер с переменными окружения:
+```bash
+docker run -d \
+  --name ttt-bank-server \
+  -p 8000:8000 \
+  --env-file .env \
+  ttt-bank-server
+```
+
+Или используйте docker-compose:
+```bash
+docker-compose up -d
 ```
 
 Сервер будет доступен по адресу: http://127.0.0.1:8000/

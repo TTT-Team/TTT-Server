@@ -1,0 +1,41 @@
+services:
+  web:
+    build: .
+    command: >
+      bash -c "
+      python bank_server/manage.py collectstatic --noinput &&
+      python bank_server/manage.py migrate &&
+      gunicorn --bind 0.0.0.0:8000 bank_server.wsgi:application
+      "
+    volumes:
+      - .:/TTT-Server  # Маппинг корня проекта
+      - static_volume:/TTT-Server/bank_server/staticfiles
+    env_file:
+      - bank_server/.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ttt_bd
+      POSTGRES_USER: ttt_user
+      POSTGRES_PASSWORD: Tinkoff
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - bank_server/.env
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/TTT-Server/bank_server/staticfiles
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
