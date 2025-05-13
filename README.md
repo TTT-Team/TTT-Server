@@ -62,26 +62,58 @@ python bank_server/manage.py runserver
 
 ### Запуск через Docker
 
-1. Соберите Docker образ:
+1. Убедитесь, что у вас установлен Docker и Docker Compose.
+
+2. Создайте файл `.env` на основе `.env_example`:
 ```bash
-docker build -t ttt-bank-server .
+cp bank_server/.env_example bank_server/.env
 ```
 
-2. Запустите контейнер с переменными окружения:
+3. Отредактируйте файл `bank_server/.env`, заполнив необходимые переменные окружения:
+- `SECRET_KEY` - секретный ключ Django
+- `NAME` - имя базы данных
+- `USER` - пользователь базы данных
+- `PASSWORD` - пароль базы данных
+- `HOST` - хост базы данных (по умолчанию localhost)
+- `PORT` - порт базы данных (по умолчанию 5432)
+- `ACCESS_TOKEN_LIFETIME` - время жизни access токена
+- `REFRESH_TOKEN_LIFETIME` - время жизни refresh токена
+- `ALGORITHM` - алгоритм шифрования JWT
+- `AUTH_HEADER_TYPE` - тип заголовка авторизации
+
+4. Соберите Docker образ:
 ```bash
-docker run -d \
-  --name ttt-bank-server \
-  -p 8000:8000 \
-  --env-file .env \
-  ttt-bank-server
+docker-compose build
 ```
 
-Или используйте docker-compose:
+5. Запустите проект с помощью Docker Compose:
 ```bash
 docker-compose up -d
 ```
 
+При первом запуске автоматически будут:
+- Применены миграции
+- Создана начальная валюта (RUB)
+- Собран статический контент
+- Запущен веб-сервер
+
+Для просмотра логов:
+```bash
+docker-compose logs -f
+```
+
+Для остановки:
+```bash
+docker-compose down
+```
+
 Сервер будет доступен по адресу: http://127.0.0.1:8000/
+
+### Структура Docker-конфигурации
+
+Проект использует следующие Docker-файлы:
+- `Dockerfile` - основной файл для сборки образа
+- `docker-compose.yml` - конфигурация для запуска контейнеров
 
 ## API Документация
 

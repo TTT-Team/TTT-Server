@@ -3,9 +3,11 @@ services:
     build: .
     command: >
       bash -c "
-      python bank_server/manage.py collectstatic --noinput &&
-      python bank_server/manage.py migrate &&
-      gunicorn --bind 0.0.0.0:8000 bank_server.wsgi:application
+      cd bank_server &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      python manage.py init_data &&
+      gunicorn bank_server.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
       - .:/TTT-Server  # Маппинг корня проекта
@@ -16,7 +18,7 @@ services:
       - db
 
   db:
-    image: postgres:13
+    image: postgres:14
     environment:
       POSTGRES_DB: ttt_bd
       POSTGRES_USER: ttt_user

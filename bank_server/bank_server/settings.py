@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 from pathlib import Path
 from config import config
@@ -23,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',  # Для разработки
     'drf_spectacular',
     'drf_spectacular_sidecar',  # (необязательно, для красивого UI)
     'rest_framework',
@@ -38,6 +38,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'bank_server.urls'
@@ -102,8 +103,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Куда collectstatic сложит файлы
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Где искать статику
+    BASE_DIR / 'static'
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

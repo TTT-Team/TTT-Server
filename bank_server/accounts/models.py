@@ -77,7 +77,7 @@ class User(AbstractUser):
                 user=self,
                 account_number=account_number,
                 type='Debit',
-                currency=Currency.objects.get(kod='RUB'),
+                currency=Currency.objects.get(code='RUB'),
                 isMain=True,
                 balance=0
             )
@@ -99,7 +99,7 @@ class Currency(models.Model):
         null=False,
         blank=True
     )
-    kod = models.CharField(
+    code = models.CharField(
         verbose_name="Код валюты",
         max_length=3,
         unique=True,
