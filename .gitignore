@@ -1,2 +1,4 @@
 # Secrets
 /bank_server/.env
+
+/bank_server/staticfiles/
